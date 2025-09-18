@@ -1,43 +1,22 @@
 name: Build APK with Buildozer
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+  workflow_dispatch
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install Buildozer and dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libtinfo-dev
-        pip3 install --user --upgrade Cython virtualenv buildozer
+      - name: Build Android APK
+        uses: ufolux/actions-kivy-buildozer@v1
+        with:
+          command: buildozer android debug
 
-    - name: Run Buildozer first time (to download SDK)
-      run: |
-        buildozer android debug || true
-
-    - name: Accept Android licenses
-      run: |
-        mkdir -p ~/.android
-        echo "### User Sources for Android SDK Manager" > ~/.android/repositories.cfg
-        
-        # استفاده از مسیر دقیق و مشخص کردن sdk_root
-        SDK_ROOT="/home/runner/.buildozer/android/platform/android-sdk"
-        yes | $SDK_ROOT/tools/bin/sdkmanager --sdk_root=$SDK_ROOT --licenses
-
-    - name: Build APK for real
-      run: |
-        buildozer android debug
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug-apk
-        path: bin/*.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: bin/*.apk
