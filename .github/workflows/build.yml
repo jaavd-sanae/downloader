@@ -19,11 +19,17 @@ jobs:
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libtinfo-dev
         pip3 install --user --upgrade Cython virtualenv buildozer
 
-    - name: Accept Android SDK licenses
+    - name: Find sdkmanager and accept licenses
       run: |
         mkdir -p ~/.android
         echo "### User Sources for Android SDK Manager" > ~/.android/repositories.cfg
-        yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+        
+        # پیدا کردن مسیر واقعی sdkmanager
+        SDKMANAGER_PATH=$(find /home/runner/.buildozer -name "sdkmanager" | head -n 1)
+        echo "Found sdkmanager at: $SDKMANAGER_PATH"
+        
+        # قبول کردن لایسنس‌ها
+        yes | $SDKMANAGER_PATH --licenses
 
     - name: Build APK with Buildozer
       run: |
