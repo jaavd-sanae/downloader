@@ -19,19 +19,24 @@ jobs:
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libtinfo-dev
         pip3 install --user --upgrade Cython virtualenv buildozer
 
-    - name: Find sdkmanager and accept licenses
+    - name: Run Buildozer first time (to download SDK)
+      run: |
+        # این اجرای اول فقط برای دانلود SDK هست و با خطا می‌افته
+        buildozer android debug || true
+
+    - name: Accept Android licenses
       run: |
         mkdir -p ~/.android
         echo "### User Sources for Android SDK Manager" > ~/.android/repositories.cfg
         
-        # پیدا کردن مسیر واقعی sdkmanager
-        SDKMANAGER_PATH=$(find /home/runner/.buildozer -name "sdkmanager" | head -n 1)
+        # حالا پوشه buildozer ساخته شده و می‌تونیم مسیر رو پیدا کنیم
+        SDKMANAGER_PATH=$(find /home/runner -name "sdkmanager" | head -n 1)
         echo "Found sdkmanager at: $SDKMANAGER_PATH"
         
         # قبول کردن لایسنس‌ها
         yes | $SDKMANAGER_PATH --licenses
 
-    - name: Build APK with Buildozer
+    - name: Build APK for real
       run: |
         buildozer android debug
 
