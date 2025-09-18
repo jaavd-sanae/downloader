@@ -1,7 +1,7 @@
-name: Build APK
+name: Build APK with Buildozer
 
 on:
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch: # اجرای دستی
   push:
     branches: [ main ]
 
@@ -13,19 +13,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: Build with Gradle
+    - name: Install Buildozer and dependencies
       run: |
-        cd app  # به پوشه app برو
-        gradle assembleDebug  # با دستور مستقیم gradle بساز
+        sudo apt-get update
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libtinfo5
+        pip3 install --user --upgrade Cython virtualenv buildozer
+
+    - name: Build APK with Buildozer
+      run: |
+        buildozer android debug
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: bin/*.apk # این مسیر درست هست چون buildozer فایل رو تو bin میذاره
