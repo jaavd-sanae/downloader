@@ -1,8 +1,8 @@
 name: Build APK
 
 on:
-  workflow_dispatch: # Allows you to manually trigger the build
-  push: # Optional: Also build on every push to the main branch
+  workflow_dispatch: # Allows manual trigger
+  push:
     branches: [ main ]
 
 jobs:
@@ -19,11 +19,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Change wrapper permissions
-      run: chmod +x ./gradlew
-
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+    - name: Build with Gradle
+      run: |
+        cd app  # به پوشه app برو
+        gradle assembleDebug  # با دستور مستقیم gradle بساز
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
