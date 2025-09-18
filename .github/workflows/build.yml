@@ -26,11 +26,6 @@ jobs:
     - name: Install Buildozer
       run: pip install buildozer
 
-    - name: Initialize Buildozer
-      run: |
-        buildozer init
-        buildozer android update
-
     - name: Build APK
       run: |
         buildozer android debug
