@@ -1,22 +1,50 @@
 name: Build APK with Buildozer
 
 on:
-  workflow_dispatch
+  workflow_dispatch:  # اجازه اجرای دستی رو میده
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Build Android APK
-        uses: ufolux/actions-kivy-buildozer@v1
-        with:
-          command: buildozer android debug
+    # استفاده از Action مخصوص Buildozer که tested شده
+    - name: Build with Buildozer
+      uses: ufolux/actions-kivy-buildozer@v1
+      with:
+        command: buildozer android debug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: bin/*.apk
+    # بررسی اینکه آیا فایل APK واقعاً ساخته شده یا نه
+    - name: Check if APK exists
+      id: check-apk
+      run: |
+        if [ -f "bin/*.apk" ]; then
+          echo "APK_FILE_EXISTS=true" >> $GITHUB_OUTPUT
+        else
+          echo "APK_FILE_EXISTS=false" >> $GITHUB_OUTPUT
+          echo "❌ فایل APK ساخته نشده! لیست فایل‌های موجود:"
+          find . -name "*.apk" -type f
+          ls -la bin/ || echo "پوشه bin وجود ندارد"
+        fi
+
+    # آپلود فایل فقط اگر ساخته شده باشد
+    - name: Upload APK
+      if: steps.check-apk.outputs.APK_FILE_EXISTS == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-apk
+        path: bin/*.apk
+
+    # اگر فایل ساخته نشد، لاگ‌ها رو نشون بده
+    - name: Debug - Show logs
+      if: steps.check-apk.outputs.APK_FILE_EXISTS == 'false'
+      run: |
+        echo "### نمایش آخرین خطاهای احتمالی ###"
+        find . -name "*.log" -exec tail -n 20 {} \; || echo "فایل لاگ یافت نشد"
+        echo "### ساختار پوشه پروژه ###"
+        ls -la
+        echo "### محتوای فایل buildozer.spec ###"
+        cat buildozer.spec || echo "فایل buildozer.spec یافت نشد"
