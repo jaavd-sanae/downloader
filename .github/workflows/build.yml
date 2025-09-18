@@ -21,7 +21,6 @@ jobs:
 
     - name: Run Buildozer first time (to download SDK)
       run: |
-        # این اجرای اول فقط برای دانلود SDK هست و با خطا می‌افته
         buildozer android debug || true
 
     - name: Accept Android licenses
@@ -29,12 +28,9 @@ jobs:
         mkdir -p ~/.android
         echo "### User Sources for Android SDK Manager" > ~/.android/repositories.cfg
         
-        # حالا پوشه buildozer ساخته شده و می‌تونیم مسیر رو پیدا کنیم
-        SDKMANAGER_PATH=$(find /home/runner -name "sdkmanager" | head -n 1)
-        echo "Found sdkmanager at: $SDKMANAGER_PATH"
-        
-        # قبول کردن لایسنس‌ها
-        yes | $SDKMANAGER_PATH --licenses
+        # استفاده از مسیر دقیق و مشخص کردن sdk_root
+        SDK_ROOT="/home/runner/.buildozer/android/platform/android-sdk"
+        yes | $SDK_ROOT/tools/bin/sdkmanager --sdk_root=$SDK_ROOT --licenses
 
     - name: Build APK for real
       run: |
